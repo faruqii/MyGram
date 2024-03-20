@@ -1,0 +1,2 @@
+mkdir -p cmd
+for dir in internal/*; do touch "$dir/.gitkeep"; done
