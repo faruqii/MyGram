@@ -9,7 +9,7 @@ import (
 )
 
 type SocialMedia struct {
-	ID             string    `json:"id" gorm:"primaryKey;type:uuid;default:uuid_generate_v4()"`
+	ID             string    `json:"id" gorm:"primaryKey, type:uuid, default:uuid_generate_v4()"`
 	Name           string    `json:"name" validate:"required"`
 	SocialMediaURL string    `json:"social_media_url" validate:"required"`
 	UserID         string    `json:"user_id"`
@@ -19,8 +19,8 @@ type SocialMedia struct {
 }
 
 func (s *SocialMedia) BeforeCreate(tx *gorm.DB) (err error) {
-	s.ID = uuid.New().String()
-	return
+	s.ID = uuid.NewString()
+	return nil
 }
 
 func ValidateSocialMedia(s *SocialMedia) error {

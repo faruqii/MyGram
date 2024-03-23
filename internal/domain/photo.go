@@ -9,7 +9,7 @@ import (
 )
 
 type Photo struct {
-	ID        string    `json:"id" gorm:"primaryKey;type:uuid;default:uuid_generate_v4()"`
+	ID        string    `json:"id" gorm:"primaryKey, type:uuid, default:uuid_generate_v4()"`
 	Title     string    `json:"title" validate:"required"`
 	Caption   string    `json:"caption"`
 	PhotoURL  string    `json:"photo_url" validate:"required"`
@@ -20,8 +20,8 @@ type Photo struct {
 }
 
 func (p *Photo) BeforeCreate(tx *gorm.DB) (err error) {
-	p.ID = uuid.New().String()
-	return
+	p.ID = uuid.NewString()
+	return nil
 }
 
 func ValidatePhoto(p *Photo) error {

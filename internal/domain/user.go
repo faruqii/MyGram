@@ -9,7 +9,7 @@ import (
 )
 
 type User struct {
-	ID          string    `json:"id" gorm:"primaryKey;type:uuid;default:uuid_generate_v4()"`
+	ID          string    `json:"id" gorm:"primaryKey, type:uuid, default:uuid_generate_v4()"`
 	Username    string    `json:"username" validate:"required,unique"`
 	Email       string    `json:"email" validate:"required,email,unique"`
 	Password    string    `json:"password" validate:"required,min=6"`
@@ -19,8 +19,8 @@ type User struct {
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	u.ID = uuid.New().String()
-	return
+	u.ID = uuid.NewString()
+	return nil
 }
 
 func ValidateUser(u *User) error {
