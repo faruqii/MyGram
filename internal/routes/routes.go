@@ -2,17 +2,23 @@ package routes
 
 import (
 	"MyGram/internal/controllers"
+	"MyGram/internal/middleware"
 	"MyGram/internal/services"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
-func Routes(router *gin.RouterGroup, userSvc services.UserServices) {
-	userController := controllers.NewUserControllers(userSvc)
+func Routes(router fiber.Router, userSvc services.UserServices, middleware *middleware.Middleware) {
+	userController := controllers.NewUserControllers(userSvc, *middleware)
 
-	user := router.Group("/user")
-	{
-		user.POST("/register", userController.Register)
-		user.POST("/login", userController.Login)
-	}
+	user := router.Group("/users")
+	user.Post("/register", userController.Register)
+	user.Post("/login", userController.Login)
+
+	// Authenticated routes for users
+	userAuth := router.Group("/users")
+	userAuth.Use(middleware.Authenticate())
+	userAuth.Put("", userController.Update)
+	userAuth.Delete("", userController.Delete)
+
 }

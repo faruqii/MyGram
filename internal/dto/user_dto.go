@@ -25,6 +25,19 @@ type LoginResponse struct {
 	Token string `json:"token"`
 }
 
+type UpdateUserRequest struct {
+	Email    string `json:"email"`
+	Username string `json:"username"`
+}
+
+type UpdateUserResponse struct {
+	ID          string `json:"id"`
+	Email       string `json:"email"`
+	Username    string `json:"username"`
+	DateOfBirth string `json:"date_of_birth"`
+	UpdatedAt   string `json:"updated_at"`
+}
+
 type Claims struct {
 	UserID string `json:"user_id"`
 	jwt.RegisteredClaims

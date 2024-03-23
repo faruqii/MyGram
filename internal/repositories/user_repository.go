@@ -10,6 +10,8 @@ type UserRepository interface {
 	Create(user *domain.User) error
 	FindByID(id string) (*domain.User, error)
 	FindByEmail(email string) (*domain.User, error)
+	Update(user *domain.User) error
+	Delete(id string) error
 }
 
 type userRepository struct {
@@ -42,4 +44,12 @@ func (r *userRepository) FindByEmail(email string) (*domain.User, error) {
 	}
 
 	return &user, nil
+}
+
+func (r *userRepository) Update(user *domain.User) error {
+	return r.db.Save(user).Error
+}
+
+func (r *userRepository) Delete(id string) error {
+	return r.db.Where("id = ?", id).Delete(&domain.User{}).Error
 }

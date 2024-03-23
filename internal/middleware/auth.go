@@ -2,13 +2,13 @@ package middleware
 
 import (
 	"MyGram/internal/repositories"
-	"net/http"
+	"strings"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
 type AuthenticationMiddleware interface {
-	Authenticate() gin.HandlerFunc
+	Authenticate() fiber.Handler
 }
 
 type Middleware struct {
@@ -19,22 +19,31 @@ func NewMiddleware(tokenRepository repositories.TokenRepository) *Middleware {
 	return &Middleware{tokenRepository: tokenRepository}
 }
 
-func (m *Middleware) Authenticate() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
+func (m *Middleware) Authenticate() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		authHeader := c.Get("Authorization")
 		if authHeader == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
-			return
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 
-		user, err := m.tokenRepository.FindUserByToken(authHeader)
+		// Extract bearer token from Authorization header
+		token := strings.TrimPrefix(authHeader, "Bearer ")
+
+		if token == "" {
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
+		}
+
+		// Fetch user from token
+		user, err := m.tokenRepository.FindUserByToken(token)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
-			return
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 
-		c.Set("user", user)
+		c.Locals("user", user)
 
-		c.Next()
+		// Set bearer token as a custom header
+		c.Set("auth", token)
+
+		return c.Next()
 	}
 }

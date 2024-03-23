@@ -14,6 +14,10 @@ type UserServices interface {
 	Register(user *domain.User) error
 	Login(email, password string) (string, error)
 	CreateUserToken(user *domain.User) (string, error)
+	Update(user *domain.User) error
+	FindUserByID(id string) (*domain.User, error)
+	Delete(id string) error
+	DeleteUserToken(userID string) error
 }
 
 type userServices struct {
@@ -83,11 +87,10 @@ func (s *userServices) CreateUserToken(user *domain.User) (string, error) {
 		return "", err
 	}
 
-
 	// Create or update token in repository
 	newToken := &domain.Token{
-		UserID:   user.ID,
-		Token:    signedToken,
+		UserID: user.ID,
+		Token:  signedToken,
 	}
 	_, err = s.tokenRepo.CreateOrUpdateToken(newToken)
 	if err != nil {
@@ -96,3 +99,40 @@ func (s *userServices) CreateUserToken(user *domain.User) (string, error) {
 
 	return signedToken, nil
 }
+
+func (s *userServices) Update(user *domain.User) error {
+	err := s.userRepo.Update(user)
+	if err != nil {
+		return HandleError(err, "Failed to update user", 500)
+	}
+
+	return nil
+}
+
+func (s *userServices) FindUserByID(id string) (*domain.User, error) {
+	user, err := s.userRepo.FindByID(id)
+	if err != nil {
+		return nil, HandleError(err, "User not found", 404)
+	}
+
+	return user, nil
+}
+
+func (s *userServices) Delete(id string) error {
+	err := s.userRepo.Delete(id)
+	if err != nil {
+		return HandleError(err, "Failed to delete user", 500)
+	}
+
+	return nil
+}
+
+func (s *userServices) DeleteUserToken(userID string) error {
+	err := s.tokenRepo.DeleteTokenByUserID(userID)
+	if err != nil {
+		return HandleError(err, "Failed to delete token", 500)
+	}
+
+	return nil
+}
+

@@ -8,7 +8,8 @@ import (
 
 type TokenRepository interface {
 	CreateOrUpdateToken(token *domain.Token) (string, error)
-	FindUserByToken(token string) (*domain.User, error)
+	FindUserByToken(token string) (string, error)
+	DeleteTokenByUserID(userID string) error
 }
 
 type tokenRepository struct {
@@ -38,12 +39,15 @@ func (r *tokenRepository) CreateOrUpdateToken(token *domain.Token) (string, erro
 
 }
 
-func (r *tokenRepository) FindUserByToken(token string) (*domain.User, error) {
-	var user domain.User
+func (r *tokenRepository) FindUserByToken(token string) (string, error) {
+	var user domain.Token
 	err := r.db.Where("token = ?", token).First(&user).Error
 	if err != nil {
-		return nil, err
+		return "", err
 	}
+	return user.UserID, nil
+}
 
-	return &user, nil
+func (r *tokenRepository) DeleteTokenByUserID(userID string) error {
+	return r.db.Where("user_id = ?", userID).Delete(&domain.Token{}).Error
 }
