@@ -13,11 +13,13 @@ func Routes(
 	userSvc services.UserServices,
 	photoSvc services.PhotoServices,
 	commentSvc services.CommentServices,
+	socmedSvc services.SocmedServices,
 	middleware *middleware.Middleware,
 ) {
 	userController := handlers.NewUserHandlers(userSvc, *middleware)
 	photoController := handlers.NewPhotoHandlers(photoSvc, *middleware)
 	commentController := handlers.NewCommentHandlers(commentSvc, *middleware)
+	socmedController := handlers.NewSocmedHandler(socmedSvc, *middleware)
 
 	user := router.Group("/users")
 	user.Post("/register", userController.Register)
@@ -44,4 +46,12 @@ func Routes(
 	comment.Get("", commentController.GetAll)
 	comment.Put("/:id", commentController.Update)
 	comment.Delete("/:id", commentController.Delete)
+
+	// Socmed routes
+	socmed := router.Group("/socialmedias")
+	socmed.Use(middleware.Authenticate())
+	socmed.Post("", socmedController.Create)
+	socmed.Get("", socmedController.GetAll)
+	socmed.Put("/:id", socmedController.Update)
+	socmed.Delete("/:id", socmedController.Delete)
 }
