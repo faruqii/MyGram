@@ -8,8 +8,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func Routes(router fiber.Router, userSvc services.UserServices, middleware *middleware.Middleware) {
+func Routes(router fiber.Router, userSvc services.UserServices, photoSvc services.PhotoServices, middleware *middleware.Middleware) {
 	userController := handlers.NewUserHandlers(userSvc, *middleware)
+	photoController := handlers.NewPhotoHandlers(photoSvc, *middleware)
 
 	user := router.Group("/users")
 	user.Post("/register", userController.Register)
@@ -21,4 +22,11 @@ func Routes(router fiber.Router, userSvc services.UserServices, middleware *midd
 	userAuth.Put("", userController.Update)
 	userAuth.Delete("", userController.Delete)
 
+	// Photo routes
+	photo := router.Group("/photos")
+	photo.Use(middleware.Authenticate())
+	photo.Post("", photoController.Create)
+	photo.Get("", photoController.GetAll)
+	photo.Put("/:id", photoController.Update)
+	photo.Delete("/:id", photoController.Delete)
 }

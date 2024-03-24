@@ -20,11 +20,14 @@ func StartApplication() {
 
 	userRepo := repositories.NewUserRepository(db)
 	tokenRepo := repositories.NewTokenRepository(db)
+	photoRepo := repositories.NewPhotoRepository(db)
 
 	userSvc := services.NewUserServices(userRepo, tokenRepo)
+	photoSvc := services.NewPhotoServices(photoRepo)
+
 	middleware := middleware.NewMiddleware(tokenRepo)
 	api := app.Group("/api")
-	routes.Routes(api, userSvc, middleware)
+	routes.Routes(api, userSvc, photoSvc, middleware)
 	err = app.Listen(":3000")
 
 	if err != nil {
