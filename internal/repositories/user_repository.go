@@ -12,6 +12,7 @@ type UserRepository interface {
 	FindByEmail(email string) (*domain.User, error)
 	Update(user *domain.User) error
 	Delete(id string) error
+	EmailExists(email string) bool
 }
 
 type userRepository struct {
@@ -52,4 +53,10 @@ func (r *userRepository) Update(user *domain.User) error {
 
 func (r *userRepository) Delete(id string) error {
 	return r.db.Where("id = ?", id).Delete(&domain.User{}).Error
+}
+
+func (r *userRepository) EmailExists(email string) bool {
+	var count int64
+	r.db.Model(&domain.User{}).Where("email = ?", email).Count(&count)
+	return count > 0
 }

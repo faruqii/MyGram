@@ -1,4 +1,4 @@
-package controllers
+package handlers
 
 import (
 	"MyGram/internal/domain"
@@ -8,35 +8,42 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
 
-type UserControllers struct {
+type UserHandlers struct {
 	userSvc           services.UserServices
 	middlewareManager middleware.Middleware
 }
 
-func NewUserControllers(userSvc services.UserServices, middlewareManager middleware.Middleware) *UserControllers {
-	return &UserControllers{
+func NewUserHandlers(userSvc services.UserServices, middlewareManager middleware.Middleware) *UserHandlers {
+	return &UserHandlers{
 		userSvc:           userSvc,
 		middlewareManager: middlewareManager,
 	}
 }
 
-func (c *UserControllers) Register(ctx *fiber.Ctx) error {
+func (c *UserHandlers) Register(ctx *fiber.Ctx) error {
 	req := dto.RegisterRequest{}
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
+	validate := validator.New()
+
+	if err := req.Validate(validate); err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
 	user := domain.User{
-		Username:    req.Username,
-		Email:       req.Email,
-		Password:    req.Password,
-		DateOfBirth: req.DateOfBirth,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		Username:  req.Username,
+		Email:     req.Email,
+		Password:  req.Password,
+		Age:       req.Age,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	err := c.userSvc.Register(&user)
@@ -45,16 +52,16 @@ func (c *UserControllers) Register(ctx *fiber.Ctx) error {
 	}
 
 	response := dto.RegisterResponse{
-		ID:          user.ID,
-		Username:    user.Username,
-		Email:       user.Email,
-		DateOfBirth: user.DateOfBirth,
+		ID:       user.ID,
+		Username: user.Username,
+		Email:    user.Email,
+		Age:      user.Age,
 	}
 
 	return ctx.Status(http.StatusCreated).JSON(response)
 }
 
-func (c *UserControllers) Login(ctx *fiber.Ctx) error {
+func (c *UserHandlers) Login(ctx *fiber.Ctx) error {
 	req := dto.LoginRequest{}
 
 	if err := ctx.BodyParser(&req); err != nil {
@@ -73,7 +80,7 @@ func (c *UserControllers) Login(ctx *fiber.Ctx) error {
 	return ctx.Status(http.StatusOK).JSON(response)
 }
 
-func (c *UserControllers) Update(ctx *fiber.Ctx) error {
+func (c *UserHandlers) Update(ctx *fiber.Ctx) error {
 	// Get user ID from context
 	token := ctx.Locals("user").(string)
 
@@ -100,17 +107,17 @@ func (c *UserControllers) Update(ctx *fiber.Ctx) error {
 	}
 
 	response := dto.UpdateUserResponse{
-		ID:          user.ID,
-		Email:       user.Email,
-		Username:    user.Username,
-		DateOfBirth: user.DateOfBirth,
-		UpdatedAt:   user.UpdatedAt.Format(time.RFC3339),
+		ID:        user.ID,
+		Email:     user.Email,
+		Username:  user.Username,
+		Age:       user.Age,
+		UpdatedAt: user.UpdatedAt.Format(time.RFC3339),
 	}
 
 	return ctx.Status(http.StatusOK).JSON(response)
 }
 
-func (c *UserControllers) Delete(ctx *fiber.Ctx) error {
+func (c *UserHandlers) Delete(ctx *fiber.Ctx) error {
 	// Get user ID from context
 	token := ctx.Locals("user").(string)
 

@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"MyGram/internal/controllers"
+	"MyGram/internal/handlers"
 	"MyGram/internal/middleware"
 	"MyGram/internal/services"
 
@@ -9,7 +9,7 @@ import (
 )
 
 func Routes(router fiber.Router, userSvc services.UserServices, middleware *middleware.Middleware) {
-	userController := controllers.NewUserControllers(userSvc, *middleware)
+	userController := handlers.NewUserHandlers(userSvc, *middleware)
 
 	user := router.Group("/users")
 	user.Post("/register", userController.Register)
